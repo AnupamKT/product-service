@@ -1,6 +1,7 @@
 package com.example.productservice.service;
 
 import com.example.productservice.common.InvalidProductException;
+import com.example.productservice.common.ProductNotFoundException;
 import com.example.productservice.common.ProductServiceConstants;
 import com.example.productservice.common.ProductServiceException;
 import com.example.productservice.converter.InventoryConverter;
@@ -14,10 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProductService {
@@ -53,15 +51,14 @@ public class ProductService {
 
     private void updateInventory(ProductsAddRequest product) throws ProductServiceException {
         String action = ProductServiceConstants.InventoryAction.ADD.toString();
-        inventoryServiceIF
-                .updateInventory(inventoryConverter.prepareInventoryRequest(product, action));
+        inventoryServiceIF.updateInventory(inventoryConverter.prepareInventoryRequest(product, action));
     }
+
     private List<ProductEntity> filterProductForPersistingInDB(ProductsAddRequest request) {
         List<ProductEntity> productEntityList = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
         for (Product product : request.getProducts()) {
-            Optional<ProductEntity> entityOptional = productRepository.
-                    findByProductNameAndSeller(product.getProductName(), product.getSeller());
+            Optional<ProductEntity> entityOptional = productRepository.findByProductNameAndSeller(product.getProductName(), product.getSeller());
             if (!entityOptional.isPresent()) {
                 ProductEntity productEntity = mapper.convertValue(product, ProductEntity.class);
                 productEntity.setCreatedDate(new Date());
@@ -79,5 +76,22 @@ public class ProductService {
             String msg = "Server error occurred!! please try again " + e.getMessage();
             throw new ProductServiceException(msg);
         }
+    }
+
+    public Response findProduct(UUID productId) throws ProductNotFoundException {
+        ProductEntity productEntity = null;
+        Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
+        if (productEntityOptional.isPresent()) {
+            productEntity = productEntityOptional.get();
+        } else {
+            String msg = "product not found with productId " + productId;
+            throw new ProductNotFoundException(msg);
+        }
+        return new Response(200, productEntity);
+    }
+
+    public Response fetchAll() {
+        List<ProductEntity> productEntityList = productRepository.findAll();
+        return new Response(200, productEntityList);
     }
 }

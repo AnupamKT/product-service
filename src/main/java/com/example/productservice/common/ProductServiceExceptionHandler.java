@@ -13,22 +13,29 @@ public class ProductServiceExceptionHandler extends ResponseEntityExceptionHandl
 
     @ExceptionHandler(value = DuplicateCategoryException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ErrorResponse> handleDuplicateCategoryException(DuplicateCategoryException ex){
-        ErrorResponse error= new ErrorResponse(409,ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleDuplicateCategoryException(DuplicateCategoryException ex) {
+        ErrorResponse error = new ErrorResponse(409, ex.getMessage());
         return ResponseEntity.status(409).body(error);
     }
 
     @ExceptionHandler(value = InvalidProductException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleInvalidProductException(InvalidProductException ex){
-        ErrorResponse error= new ErrorResponse(400,ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleInvalidProductException(InvalidProductException ex) {
+        ErrorResponse error = new ErrorResponse(400, ex.getMessage());
         return ResponseEntity.status(400).body(error);
     }
 
     @ExceptionHandler(value = ProductServiceException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleProductServiceException(ProductServiceException ex){
-        ErrorResponse error= new ErrorResponse(500,ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleProductServiceException(ProductServiceException ex) {
+        ErrorResponse error = new ErrorResponse(500, ex.getMessage());
         return ResponseEntity.status(500).body(error);
+    }
+
+    @ExceptionHandler(value = ProductNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handleProductNotFoundException(ProductNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(404, ex.getMessage());
+        return ResponseEntity.status(404).body(error);
     }
 }

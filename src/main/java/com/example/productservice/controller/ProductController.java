@@ -1,15 +1,15 @@
 package com.example.productservice.controller;
 
+import com.example.productservice.common.ProductNotFoundException;
 import com.example.productservice.model.Product;
 import com.example.productservice.model.ProductsAddRequest;
 import com.example.productservice.model.Response;
 import com.example.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/product")
@@ -33,7 +33,15 @@ public class ProductController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    public ResponseEntity Product(@RequestBody Product product) {
-        return null;
+    @GetMapping("/{productId}")
+    public ResponseEntity<Response> findProduct(@PathVariable UUID productId) throws ProductNotFoundException {
+        Response response = productService.findProduct(productId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Response>fetchAll(){
+    Response response = productService.fetchAll();
+    return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

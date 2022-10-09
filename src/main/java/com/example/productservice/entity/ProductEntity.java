@@ -13,8 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="PRODUCT_INFO")
+@Table(name = "PRODUCT_INFO"
+        , uniqueConstraints = {@UniqueConstraint(name = "uniqueProductNameAndSeller"
+        , columnNames = {"productName", "seller"})})
 @JsonIgnoreProperties(ignoreUnknown = true)
+
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
