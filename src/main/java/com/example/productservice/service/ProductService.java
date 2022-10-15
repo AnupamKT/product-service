@@ -5,8 +5,10 @@ import com.example.productservice.common.ProductNotFoundException;
 import com.example.productservice.common.ProductServiceConstants;
 import com.example.productservice.common.ProductServiceException;
 import com.example.productservice.converter.InventoryConverter;
+import com.example.productservice.converter.ProductConverter;
 import com.example.productservice.entity.ProductEntity;
 import com.example.productservice.model.Product;
+import com.example.productservice.model.ProductGetResponse;
 import com.example.productservice.model.ProductsAddRequest;
 import com.example.productservice.model.Response;
 import com.example.productservice.repository.ProductRepository;
@@ -31,6 +33,9 @@ public class ProductService {
 
     @Autowired
     private InventoryConverter inventoryConverter;
+
+    @Autowired
+    private ProductConverter productConverter;
 
     public Response addProduct(ProductsAddRequest products) throws Exception {
         //validate request
@@ -79,15 +84,18 @@ public class ProductService {
     }
 
     public Response findProduct(UUID productId) throws ProductNotFoundException {
-        ProductEntity productEntity = null;
+        ProductGetResponse getResponse = null;
         Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
         if (productEntityOptional.isPresent()) {
-            productEntity = productEntityOptional.get();
+            ProductEntity productEntity = productEntityOptional.get();
+
+            getResponse = productConverter.prepareGetResponse(productEntity);
+
         } else {
             String msg = "product not found with productId " + productId;
             throw new ProductNotFoundException(msg);
         }
-        return new Response(200, productEntity);
+        return new Response(200, getResponse);
     }
 
     public Response fetchAll() {
