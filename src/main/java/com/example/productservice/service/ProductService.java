@@ -15,6 +15,10 @@ import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.validator.ValidatorIF;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -98,8 +102,9 @@ public class ProductService {
         return new Response(200, getResponse);
     }
 
-    public Response fetchAll() {
-        List<ProductEntity> productEntityList = productRepository.findAll();
-        return new Response(200, productEntityList);
+    public Response fetchAll(int pageSize, int pageNumber) {
+        Pageable page= PageRequest.of(pageNumber,pageSize, Sort.by("productName").ascending());
+        Page<ProductEntity> productEntityList = productRepository.findAll(page);
+        return new Response(200, productEntityList.getContent());
     }
 }

@@ -40,8 +40,8 @@ public class ProductController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Response>fetchAll(){
-    Response response = productService.fetchAll();
+    public ResponseEntity<Response>fetchAll(@RequestParam int pageNumber,@RequestParam int pageSize){
+    Response response = productService.fetchAll(pageSize,pageNumber);
     return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
