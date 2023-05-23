@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductsAddRequest {
-     private List<Product> products;
-     private String sellerName;
+public class CategoryList {
+    private List<Category> categories;
 }

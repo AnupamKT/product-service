@@ -12,32 +12,33 @@ import com.example.productservice.model.ProductGetResponse;
 import com.example.productservice.model.ProductsAddRequest;
 import com.example.productservice.model.Response;
 import com.example.productservice.repository.ProductRepository;
+import com.example.productservice.util.CSVUtil;
 import com.example.productservice.validator.ValidatorIF;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
-
     @Autowired
     private InventoryServiceIF inventoryServiceIF;
-
     @Autowired
+    @Qualifier("product")
     private ValidatorIF validatorIF;
-
     @Autowired
     private InventoryConverter inventoryConverter;
-
     @Autowired
     private ProductConverter productConverter;
 
@@ -45,12 +46,10 @@ public class ProductService {
         //validate request
         validatorIF.validate(products);
         try {
-            //some product might be already present in product DB
-            //persist only if it is not available with same product name and seller name.
-            List<ProductEntity> entityList = filterProductForPersistingInDB(products);
-            productRepository.saveAll(entityList);
+            persistProductInDB(products);
             //call inventory service to update inventory.
-            updateInventory(products);
+            //updateInventory(products);
+
         } catch (Exception e) {
             handleException(e);
         }
@@ -63,19 +62,39 @@ public class ProductService {
         inventoryServiceIF.updateInventory(inventoryConverter.prepareInventoryRequest(product, action));
     }
 
-    private List<ProductEntity> filterProductForPersistingInDB(ProductsAddRequest request) {
-        List<ProductEntity> productEntityList = new ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
-        for (Product product : request.getProducts()) {
-            Optional<ProductEntity> entityOptional = productRepository.findByProductNameAndSeller(product.getProductName(), product.getSeller());
-            if (!entityOptional.isPresent()) {
-                ProductEntity productEntity = mapper.convertValue(product, ProductEntity.class);
-                productEntity.setCreatedDate(new Date());
-                productEntity.setUpdatedDate(new Date());
-                productEntityList.add(productEntity);
-            }
+    private void persistProductInDB(ProductsAddRequest request) {
+        List<ProductEntity> productEntityList = null;
+        String sellerName = request.getSellerName();
+        List<ProductEntity> allProductsBySellerName =
+                getAllProductsBySellerName(sellerName);
+        if (CollectionUtils.isEmpty(allProductsBySellerName)) {
+            //add everything, it means seller is adding product for the first time.
+            productEntityList = productConverter.convertProductsTOProductEntityList(request.getProducts(), sellerName);
+        } else {
+            List<Product> filteredProducts = filterOutExistingProducts(allProductsBySellerName,
+                    request.getProducts());
+            productEntityList = productConverter.convertProductsTOProductEntityList(filteredProducts, sellerName);
         }
-        return productEntityList;
+        productRepository.saveAll(productEntityList);
+    }
+
+    /**
+     * This method compares two products list one which is submitted by seller and other list which is present ind DB
+     * This method returns all products which is not present in list which is coming from DB.
+     *
+     * @return
+     */
+    private List<Product> filterOutExistingProducts(List<ProductEntity> productEntity, List<Product> products) {
+        List<String> productNameList = productEntity.stream()
+                .map(product -> product.getProductName().toLowerCase())
+                .collect(Collectors.toList());
+        return products.stream().
+                filter(product -> !productNameList.contains(product.getProductName().toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    private List<ProductEntity> getAllProductsBySellerName(String sellerName) {
+        return productRepository.findBySeller(sellerName);
     }
 
     private void handleException(Exception e) throws Exception {
@@ -103,7 +122,7 @@ public class ProductService {
     }
 
     public Response fetchAll(int pageSize, int pageNumber) {
-        Pageable page= PageRequest.of(pageNumber,pageSize, Sort.by("productName").ascending());
+        Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by("productName").ascending());
         Page<ProductEntity> productEntityList = productRepository.findAll(page);
         return new Response(200, productEntityList.getContent());
     }

@@ -12,12 +12,16 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="PRODUCT_CATEGORY")
+@Table(name = "PRODUCT_CATEGORY",
+        uniqueConstraints = {@UniqueConstraint(name = "uniqueCategory"
+                , columnNames = {"topCategory", "category", "subcategory"})})
 public class ProductCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID categoryId;
-    @Column(unique = true,nullable = false)
-    private String categoryName;
+    private String topCategory;
+    private String category;
+    private String subcategory;
     private Date createDate;
+    private Date updatedDate;
 }

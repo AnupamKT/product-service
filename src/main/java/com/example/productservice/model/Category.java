@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductsAddRequest {
-     private List<Product> products;
-     private String sellerName;
+public class Category {
+
+    private String topCategory;
+    private String category;
+    private String subcategory;
 }

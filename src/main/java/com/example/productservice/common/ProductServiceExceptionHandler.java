@@ -38,4 +38,18 @@ public class ProductServiceExceptionHandler extends ResponseEntityExceptionHandl
         ErrorResponse error = new ErrorResponse(404, ex.getMessage());
         return ResponseEntity.status(404).body(error);
     }
+
+    @ExceptionHandler(value = CategoryServiceException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleCategoryServiceException(CategoryServiceException ex) {
+        ErrorResponse error = new ErrorResponse(500, ex.getMessage());
+        return ResponseEntity.status(500).body(error);
+    }
+
+    @ExceptionHandler(value = ConflictingCategoryException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleConflictingCategoryException(ConflictingCategoryException ex) {
+        ErrorResponse error = new ErrorResponse(409, ex.getMessage());
+        return ResponseEntity.status(409).body(error);
+    }
 }
