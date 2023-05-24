@@ -13,7 +13,7 @@ public class Product {
     private String productName;
     private double price;
     private int quantity;
-    private String categoryName;
+    private Category category;
     //gets populated from validator method.
     private UUID categoryId;
 }

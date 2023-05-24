@@ -16,7 +16,7 @@ public class InventoryConverter {
             Inventory inventory = new Inventory();
             inventory.setProductName(product.getProductName());
             inventory.setQuantity((long) product.getQuantity());
-            inventory.setCategoryName(product.getCategoryName());
+            inventory.setCategoryName(product.getCategory().getSubcategory());
             inventory.setAction(action);
             inventoryList.add(inventory);
         });
